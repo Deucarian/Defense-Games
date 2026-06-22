@@ -1,0 +1,60 @@
+# Defense Games API
+
+`com.deucarian.defense-games` composes existing Deucarian packages into a narrow defense-session runtime. It does not own spawning pools, pathfinding, damage math, encounter scheduling, progression, persistence, UI, or content balance.
+
+## Runtime
+
+- `DefenseRuntime` starts, stops, consumes encounter `SpawnRequest` values, tracks active attackers, receives terminal signals, and produces deterministic snapshots.
+- `DefenseRuntimeDefinition` contains one or more `DefenseObjectiveDefinition` entries.
+- `DefenseObjectiveDefinition` can model health, lives, both, or neither. Health damage is delegated through `IDefenseCombatAdapter`.
+- `DefenseSnapshot`, `DefenseAgentSnapshot`, and `DefenseObjectiveSnapshot` expose sorted, immutable copies for tests, telemetry, and adapters.
+
+## Identifiers
+
+- `DefenseObjectiveId` names a defense target such as a base, lane endpoint, crystal, convoy, or player.
+- `DefenseAgentId` is assigned by the runtime in deterministic spawn-consumption order.
+- `DefenseRouteId` is reserved for content-side route naming.
+
+## Agent Lifecycle
+
+Agents enter through `ConsumeSpawnRequest`. A successful spawn assigns a route and registers navigation before the agent is counted active.
+
+Terminal signals are explicit:
+
+- `ReportKilled`
+- `ReportDespawned`
+- `ReportReachedObjective`
+
+After a terminal signal, repeated signals for the same agent return `DefenseFailureReason.DuplicateSignal`.
+
+## Integration Ports
+
+- `IDefenseWorldSpawner` adapts `WorldSpawnService`.
+- `IDefenseNavigator` adapts `WorldNavigationService`.
+- `IDefenseRouteResolver` translates spawn requests and spawned objects into destination or path assignments.
+- `IDefenseCombatAdapter` applies objective damage through Combat.
+- `IDefenseEncounterMetricSink` reports defense results back to encounter/session orchestration.
+
+## Built-In Adapters
+
+- `WorldSpawnDefenseAdapter`
+- `WorldNavigationDefenseAdapter`
+- `CombatDefenseObjectiveAdapter`
+
+These adapters are intentionally thin. Project-specific health bars, rewards, loot, tower targeting, offline income, saving, and UI events belong outside this package.
+
+## Event Stream
+
+`DefenseSignalResult` and `DefenseSpawnResult` carry ordered `DefenseEvent` arrays. Events are copies, so callers can retain results without observing later runtime mutation.
+
+## Dependencies
+
+Runtime dependencies are:
+
+- `com.deucarian.gameplay-foundation`
+- `com.deucarian.encounters`
+- `com.deucarian.combat`
+- `com.deucarian.world-spawning`
+- `com.deucarian.world-navigation`
+
+There is no dependency on Progression, Persistence, UI, Core State, Entities, or scene systems.

@@ -1,0 +1,22 @@
+{
+  "name": "Deucarian.DefenseGames.Tests",
+  "rootNamespace": "Deucarian.DefenseGames.Tests",
+  "references": [
+    "Deucarian.DefenseGames",
+    "Deucarian.GameplayFoundation",
+    "Deucarian.Encounters",
+    "Deucarian.Combat",
+    "Deucarian.WorldSpawning",
+    "Deucarian.WorldNavigation"
+  ],
+  "includePlatforms": [ "Editor" ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [ "UNITY_INCLUDE_TESTS" ],
+  "versionDefines": [],
+  "optionalUnityReferences": [ "TestAssemblies" ],
+  "noEngineReferences": false
+}

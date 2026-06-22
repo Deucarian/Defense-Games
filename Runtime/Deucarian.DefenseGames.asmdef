@@ -1,0 +1,20 @@
+{
+  "name": "Deucarian.DefenseGames",
+  "rootNamespace": "Deucarian.DefenseGames",
+  "references": [
+    "Deucarian.GameplayFoundation",
+    "Deucarian.Encounters",
+    "Deucarian.Combat",
+    "Deucarian.WorldSpawning",
+    "Deucarian.WorldNavigation"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
