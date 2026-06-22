@@ -168,8 +168,16 @@ namespace Deucarian.DefenseGames
     {
         private readonly WorldSpawnService _service;
         public WorldSpawnDefenseAdapter(WorldSpawnService service) { _service = service ?? throw new ArgumentNullException(nameof(service)); }
-        public SpawnResult Spawn(SpawnRequest request) => _service.Spawn(request);
+        public SpawnResult Spawn(SpawnRequest request) => _service.Spawn(ToWorldRequest(request));
         public DespawnResult Despawn(SpawnInstanceId instanceId, DespawnReason reason) => _service.Despawn(instanceId, reason);
+        public static WorldSpawnRequest ToWorldRequest(SpawnRequest request)
+        {
+            return new WorldSpawnRequest(
+                new WorldSpawnableId(request.SpawnableId.Value),
+                new WorldSpawnChannelId(request.ChannelId.Value),
+                request.Sequence,
+                new WorldSpawnRequestContext("encounters", request.EncounterId.Value, request.WaveId.Value, request.GroupId.Value, 0, (int)request.ScheduledTick));
+        }
     }
 
     /// <summary>World Navigation adapter for destination and path-following route assignments.</summary>

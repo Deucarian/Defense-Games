@@ -37,7 +37,7 @@ public static class DefenseGamesMinimalSample
 
     private sealed class NullSpawner : IDefenseWorldSpawner
     {
-        public SpawnResult Spawn(SpawnRequest request) => new SpawnResult(true, SpawnFailureReason.None, new SpawnInstanceId(1), null, request);
+        public SpawnResult Spawn(SpawnRequest request) => new SpawnResult(true, SpawnFailureReason.None, new SpawnInstanceId(1), null, WorldSpawnDefenseAdapter.ToWorldRequest(request));
         public DespawnResult Despawn(SpawnInstanceId instanceId, DespawnReason reason) => new DespawnResult(true, DespawnFailureReason.None, instanceId, null, reason);
     }
 

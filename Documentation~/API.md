@@ -37,7 +37,7 @@ After a terminal signal, repeated signals for the same agent return `DefenseFail
 
 ## Built-In Adapters
 
-- `WorldSpawnDefenseAdapter`
+- `WorldSpawnDefenseAdapter`, which maps Encounter `SpawnRequest` values to generic World Spawning `WorldSpawnRequest` values before calling `WorldSpawnService`.
 - `WorldNavigationDefenseAdapter`
 - `CombatDefenseObjectiveAdapter`
 

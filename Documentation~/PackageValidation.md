@@ -27,6 +27,15 @@ Unity.exe -batchmode -projectPath C:\Repositories\Deucarian\DefenseGames-TestPro
 
 ## Results
 
+## Phase 1L Results
+
+- EditMode pass 1: `12` total, `12` passed, `0` failed. Results: `TestResults-Phase1L-DefenseGames-EditMode-1.xml`.
+- EditMode pass 2: `12` total, `12` passed, `0` failed. Results: `TestResults-Phase1L-DefenseGames-EditMode-2.xml`.
+- PlayMode pass 1: `1` total, `1` passed, `0` failed. Results: `TestResults-Phase1L-DefenseGames-PlayMode-1.xml`.
+- PlayMode pass 2: `1` total, `1` passed, `0` failed. Results: `TestResults-Phase1L-DefenseGames-PlayMode-2.xml`.
+
+Defense Games remains the composition layer that consumes Encounter `SpawnRequest` values and maps them through `WorldSpawnDefenseAdapter` to generic World Spawning requests.
+
 - Import: passed, no compiler or package-manager errors. The log contains a Unity licensing token warning, but entitlement resolution succeeds.
 - EditMode pass 1: `9` total, `9` passed, `0` failed. Results: `C:\Repositories\Deucarian\DefenseGames-TestProject\Logs\editmode-results-1.xml`.
 - EditMode pass 2: `9` total, `9` passed, `0` failed. Results: `C:\Repositories\Deucarian\DefenseGames-TestProject\Logs\editmode-results-2.xml`.

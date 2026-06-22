@@ -153,8 +153,8 @@ namespace Deucarian.DefenseGames.Tests
         {
             GameObject prefab = new GameObject("defense-attacker");
             var spawnService = new WorldSpawnService(
-                new SpawnableCatalog(new[] { new SpawnableDefinition(Enemy, new GameObjectPrefabProvider(prefab), 2, 4) }),
-                new ChannelPoseResolver(new Dictionary<SpawnChannelId, SpawnPose> { [Channel] = new SpawnPose(Vector3.zero, Quaternion.identity) }));
+                new SpawnableCatalog(new[] { new SpawnableDefinition(new WorldSpawnableId(Enemy.Value), new GameObjectPrefabProvider(prefab), 2, 4) }),
+                new ChannelPoseResolver(new Dictionary<WorldSpawnChannelId, SpawnPose> { [new WorldSpawnChannelId(Channel.Value)] = new SpawnPose(Vector3.zero, Quaternion.identity) }));
             var navService = new WorldNavigationService();
             var runtime = new DefenseRuntime(
                 Definition(10, -1),
@@ -303,7 +303,7 @@ namespace Deucarian.DefenseGames.Tests
             private long _next;
             public bool FailSpawn;
             public int DespawnCount;
-            public SpawnResult Spawn(SpawnRequest request) => FailSpawn ? new SpawnResult(false, SpawnFailureReason.UnknownSpawnable, default, null, request) : new SpawnResult(true, SpawnFailureReason.None, new SpawnInstanceId(++_next), null, request);
+            public SpawnResult Spawn(SpawnRequest request) => FailSpawn ? new SpawnResult(false, SpawnFailureReason.UnknownSpawnable, default, null, WorldSpawnDefenseAdapter.ToWorldRequest(request)) : new SpawnResult(true, SpawnFailureReason.None, new SpawnInstanceId(++_next), null, WorldSpawnDefenseAdapter.ToWorldRequest(request));
             public DespawnResult Despawn(SpawnInstanceId instanceId, DespawnReason reason) { DespawnCount++; return new DespawnResult(true, DespawnFailureReason.None, instanceId, null, reason); }
         }
 
