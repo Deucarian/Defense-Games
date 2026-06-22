@@ -27,15 +27,17 @@ namespace Deucarian.DefenseGames
     /// <summary>Content definition for a defense objective with optional health and optional lives.</summary>
     public sealed class DefenseObjectiveDefinition
     {
-        public DefenseObjectiveDefinition(DefenseObjectiveId id, double maximumHealth = 0d, int lives = -1, IReadOnlyList<GameplayTag> tags = null)
+        public DefenseObjectiveDefinition(DefenseObjectiveId id, double maximumHealth = 0d, int lives = -1, IReadOnlyList<GameplayTag> tags = null, double maximumShield = 0d)
         {
             if (id.IsEmpty) throw new ArgumentException("Objective id cannot be empty.", nameof(id));
             if (maximumHealth < 0d) throw new ArgumentOutOfRangeException(nameof(maximumHealth));
+            if (maximumShield < 0d) throw new ArgumentOutOfRangeException(nameof(maximumShield));
             if (lives < -1) throw new ArgumentOutOfRangeException(nameof(lives));
-            Id = id; MaximumHealth = maximumHealth; Lives = lives; Tags = Copy(tags);
+            Id = id; MaximumHealth = maximumHealth; MaximumShield = maximumShield; Lives = lives; Tags = Copy(tags);
         }
         public DefenseObjectiveId Id { get; }
         public double MaximumHealth { get; }
+        public double MaximumShield { get; }
         public int Lives { get; }
         public IReadOnlyList<GameplayTag> Tags { get; }
         private static GameplayTag[] Copy(IReadOnlyList<GameplayTag> source) { if (source == null) return Array.Empty<GameplayTag>(); var copy = new GameplayTag[source.Count]; for (int i = 0; i < source.Count; i++) copy[i] = source[i]; return copy; }
@@ -47,26 +49,13 @@ namespace Deucarian.DefenseGames
         public DefenseObjectiveState(DefenseObjectiveDefinition definition)
         {
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
-            if (definition.MaximumHealth > 0d) Health = new HealthState(new CombatantId("defense.objective/" + definition.Id.Value), definition.MaximumHealth, definition.MaximumHealth);
+            if (definition.MaximumHealth > 0d) Health = new HealthState(new CombatantId("defense.objective/" + definition.Id.Value), definition.MaximumHealth, definition.MaximumHealth, definition.MaximumShield, definition.MaximumShield);
             LivesRemaining = definition.Lives;
         }
         public DefenseObjectiveDefinition Definition { get; }
-        public HealthState Health { get; private set; }
+        public HealthState Health { get; }
         public int LivesRemaining { get; private set; }
         public bool Failed { get; private set; }
-        /// <summary>Applies health damage to this objective and returns the Combat health-change result.</summary>
-        public HealthChangeResult ApplyHealthDamage(double damage)
-        {
-            CombatNumbers.RequireNonNegative(damage, nameof(damage));
-            if (Health == null) return new HealthChangeResult(CombatStatus.NoOp, 0d, 0d, 0d, damage);
-            double previous = Health.CurrentHealth;
-            if (!Health.IsAlive) return new HealthChangeResult(CombatStatus.DeadTarget, previous, previous, 0d, damage);
-            double current = Math.Max(0d, previous - damage);
-            Health = new HealthState(Health.Id, Health.MaximumHealth, current, Health.MaximumShield, Health.CurrentShield, current <= 0d ? LifeState.Dead : LifeState.Alive);
-            if (current <= 0d) Failed = true;
-            double applied = previous - current;
-            return new HealthChangeResult(applied > 0d ? CombatStatus.Success : CombatStatus.NoOp, previous, current, applied, Math.Max(0d, damage - applied));
-        }
         public void ApplyLeak() { if (LivesRemaining >= 0) { LivesRemaining = Math.Max(0, LivesRemaining - 1); if (LivesRemaining == 0) Failed = true; } }
         public void MarkFailed() { Failed = true; }
     }
@@ -146,7 +135,7 @@ namespace Deucarian.DefenseGames
     /// <summary>Receives defense metrics for encounter or session orchestration.</summary>
     public interface IDefenseEncounterMetricSink { void Record(DefenseMetricKind kind, DefenseAgentId agentId, DefenseObjectiveId objectiveId, long amount); }
     /// <summary>Applies objective damage through a combat implementation.</summary>
-    public interface IDefenseCombatAdapter { HealthChangeResult ApplyObjectiveDamage(DefenseObjectiveState objective, double damage); }
+    public interface IDefenseCombatAdapter { DamageResolutionResult ApplyObjectiveDamage(DefenseObjectiveState objective, double damage); }
     /// <summary>Spawns and despawns defense attackers through a world spawning implementation.</summary>
     public interface IDefenseWorldSpawner { SpawnResult Spawn(SpawnRequest request); DespawnResult Despawn(SpawnInstanceId instanceId, DespawnReason reason); }
     /// <summary>Registers spawned attackers with navigation and cleans them up after terminal lifecycle signals.</summary>
@@ -157,15 +146,20 @@ namespace Deucarian.DefenseGames
     {
         private readonly CombatCatalog _catalog;
         private readonly DamageTypeId _damageType;
-        public CombatDefenseObjectiveAdapter(CombatCatalog catalog, DamageTypeId damageType) { _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog)); _damageType = damageType; }
-        public HealthChangeResult ApplyObjectiveDamage(DefenseObjectiveState objective, double damage)
+        private readonly CombatSourceSnapshot _source;
+        private readonly CombatDefenseSnapshot _defense;
+        public CombatDefenseObjectiveAdapter(CombatCatalog catalog, DamageTypeId damageType, CombatSourceSnapshot source = null, CombatDefenseSnapshot defense = null)
+        {
+            _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
+            _damageType = damageType;
+            _source = source;
+            _defense = defense;
+        }
+        public DamageResolutionResult ApplyObjectiveDamage(DefenseObjectiveState objective, double damage)
         {
             if (objective == null) throw new ArgumentNullException(nameof(objective));
-            if (objective.Health == null) return new HealthChangeResult(CombatStatus.NoOp, 0d, 0d, 0d, damage);
-            if (!_catalog.TryGetDamageType(_damageType, out DamageTypeDefinition definition)) return new HealthChangeResult(CombatStatus.UnknownDamageType, objective.Health.CurrentHealth, objective.Health.CurrentHealth, 0d, damage);
-            if (definition.Immune) return new HealthChangeResult(CombatStatus.Immune, objective.Health.CurrentHealth, objective.Health.CurrentHealth, 0d, damage);
-            new DamageRequest(objective.Health.Id, new[] { new DamageComponent(_damageType, damage) });
-            return objective.ApplyHealthDamage(damage);
+            if (objective.Health == null) return CombatDamageResolver.Resolve(_catalog, null, null, null);
+            return CombatDamageResolver.Resolve(_catalog, objective.Health, null, new DamageRequest(objective.Health.Id, new[] { new DamageComponent(_damageType, damage) }, _source, _defense));
         }
     }
 
@@ -208,9 +202,10 @@ namespace Deucarian.DefenseGames
     /// <summary>Immutable snapshot of a defense objective.</summary>
     public readonly struct DefenseObjectiveSnapshot
     {
-        public DefenseObjectiveSnapshot(DefenseObjectiveId id, double health, int lives, bool failed) { Id = id; Health = health; Lives = lives; Failed = failed; }
+        public DefenseObjectiveSnapshot(DefenseObjectiveId id, double health, int lives, bool failed, double shield = 0d) { Id = id; Health = health; Lives = lives; Failed = failed; Shield = shield; }
         public DefenseObjectiveId Id { get; }
         public double Health { get; }
+        public double Shield { get; }
         public int Lives { get; }
         public bool Failed { get; }
     }
@@ -301,8 +296,8 @@ namespace Deucarian.DefenseGames
             DefenseObjectiveState objective = _objectives[record.ObjectiveId];
             if (objective.Health != null && _combat != null)
             {
-                HealthChangeResult result = _combat.ApplyObjectiveDamage(objective, damage);
-                events.Add(new DefenseEvent(DefenseEventKind.ObjectiveDamaged, agentId, record.ObjectiveId, result.Applied));
+                DamageResolutionResult result = _combat.ApplyObjectiveDamage(objective, damage);
+                events.Add(new DefenseEvent(DefenseEventKind.ObjectiveDamaged, agentId, record.ObjectiveId, result.HealthDamage));
                 if (objective.Health.LifeState == LifeState.Dead) { objective.MarkFailed(); events.Add(new DefenseEvent(DefenseEventKind.ObjectiveFailed, agentId, record.ObjectiveId)); }
             }
             else
@@ -324,7 +319,7 @@ namespace Deucarian.DefenseGames
             foreach (AgentRecord record in _agents.Values) agents[i++] = new DefenseAgentSnapshot(record.Id, record.Lifecycle, record.SpawnableId);
             Array.Sort(agents, (a, b) => a.Id.CompareTo(b.Id));
             var objectives = new DefenseObjectiveSnapshot[_objectives.Count]; i = 0;
-            foreach (DefenseObjectiveState objective in _objectives.Values) objectives[i++] = new DefenseObjectiveSnapshot(objective.Definition.Id, objective.Health == null ? -1 : objective.Health.CurrentHealth, objective.LivesRemaining, objective.Failed);
+            foreach (DefenseObjectiveState objective in _objectives.Values) objectives[i++] = new DefenseObjectiveSnapshot(objective.Definition.Id, objective.Health == null ? -1 : objective.Health.CurrentHealth, objective.LivesRemaining, objective.Failed, objective.Health == null ? 0 : objective.Health.CurrentShield);
             Array.Sort(objectives, (a, b) => a.Id.CompareTo(b.Id));
             return new DefenseSnapshot(State, agents, objectives);
         }

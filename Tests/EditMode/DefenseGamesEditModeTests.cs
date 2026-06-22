@@ -83,6 +83,61 @@ namespace Deucarian.DefenseGames.Tests
         }
 
         [Test]
+        public void ObjectiveDamage_UsesCombatResolverMitigation()
+        {
+            var adapter = new CombatDefenseObjectiveAdapter(
+                new CombatCatalog(new[] { new DamageTypeDefinition(new DamageTypeId("damage.leak")) }),
+                new DamageTypeId("damage.leak"),
+                defense: new CombatDefenseSnapshot(armor: 4));
+            TestHarness harness = TestHarness.Create(maxHealth: 100, adapter: adapter);
+            harness.Runtime.Start();
+            DefenseAgentId agent = harness.Runtime.ConsumeSpawnRequest(Request()).AgentId;
+
+            DefenseSignalResult result = harness.Runtime.ReportReachedObjective(agent, 10);
+
+            Assert.IsTrue(result.Succeeded);
+            Assert.AreEqual(6, FindValue(result.Events, DefenseEventKind.ObjectiveDamaged));
+            Assert.AreEqual(94, harness.Runtime.CreateSnapshot().Objectives[0].Health);
+        }
+
+        [Test]
+        public void ObjectiveShieldAbsorbsDamage_ThroughCombatResolver()
+        {
+            TestHarness harness = TestHarness.Create(maxHealth: 20, maxShield: 5);
+            harness.Runtime.Start();
+            DefenseAgentId agent = harness.Runtime.ConsumeSpawnRequest(Request()).AgentId;
+
+            DefenseSignalResult result = harness.Runtime.ReportReachedObjective(agent, 3);
+            DefenseObjectiveSnapshot objective = harness.Runtime.CreateSnapshot().Objectives[0];
+
+            Assert.IsTrue(result.Succeeded);
+            Assert.AreEqual(0, FindValue(result.Events, DefenseEventKind.ObjectiveDamaged));
+            Assert.AreEqual(20, objective.Health);
+            Assert.AreEqual(2, objective.Shield);
+            Assert.IsFalse(objective.Failed);
+        }
+
+        [Test]
+        public void InvalidCombatRequest_DoesNotMutateObjectiveState()
+        {
+            var adapter = new CombatDefenseObjectiveAdapter(
+                new CombatCatalog(new[] { new DamageTypeDefinition(new DamageTypeId("damage.valid")) }),
+                new DamageTypeId("damage.missing"));
+            TestHarness harness = TestHarness.Create(maxHealth: 20, maxShield: 5, adapter: adapter);
+            harness.Runtime.Start();
+            DefenseAgentId agent = harness.Runtime.ConsumeSpawnRequest(Request()).AgentId;
+
+            DefenseSignalResult result = harness.Runtime.ReportReachedObjective(agent, 10);
+            DefenseObjectiveSnapshot objective = harness.Runtime.CreateSnapshot().Objectives[0];
+
+            Assert.IsTrue(result.Succeeded);
+            Assert.AreEqual(0, FindValue(result.Events, DefenseEventKind.ObjectiveDamaged));
+            Assert.AreEqual(20, objective.Health);
+            Assert.AreEqual(5, objective.Shield);
+            Assert.IsFalse(objective.Failed);
+        }
+
+        [Test]
         public void LeakLivesObjective_FailsAtZero()
         {
             TestHarness harness = TestHarness.Create(maxHealth: 0, lives: 1);
@@ -222,9 +277,10 @@ namespace Deucarian.DefenseGames.Tests
             return new SpawnRequest(new EncounterId("encounter.test"), new WaveId("wave.test"), new SpawnGroupId("group.test"), spawnable ?? Enemy, channel ?? Channel, 0, sequence, 0, sequence);
         }
 
-        private static DefenseRuntimeDefinition Definition(double maxHealth, int lives) => new DefenseRuntimeDefinition(new[] { new DefenseObjectiveDefinition(Objective, maxHealth, lives) });
+        private static DefenseRuntimeDefinition Definition(double maxHealth, int lives, double maxShield = 0) => new DefenseRuntimeDefinition(new[] { new DefenseObjectiveDefinition(Objective, maxHealth, lives, maximumShield: maxShield) });
         private static CombatDefenseObjectiveAdapter CombatAdapter() => new CombatDefenseObjectiveAdapter(new CombatCatalog(new[] { new DamageTypeDefinition(new DamageTypeId("damage.leak")) }), new DamageTypeId("damage.leak"));
         private static bool Contains(IReadOnlyList<DefenseEvent> events, DefenseEventKind kind) { for (int i = 0; i < events.Count; i++) if (events[i].Kind == kind) return true; return false; }
+        private static double FindValue(IReadOnlyList<DefenseEvent> events, DefenseEventKind kind) { for (int i = 0; i < events.Count; i++) if (events[i].Kind == kind) return events[i].Value; return double.NaN; }
 
         private readonly struct BenchmarkMeasurement { public BenchmarkMeasurement(int operationCount, double elapsedMs, long bytesAllocated) { OperationCount = operationCount; ElapsedMs = elapsedMs; BytesAllocated = bytesAllocated; } public int OperationCount { get; } public double ElapsedMs { get; } public long BytesAllocated { get; } }
 
@@ -234,10 +290,10 @@ namespace Deucarian.DefenseGames.Tests
             public FakeSpawner Spawner;
             public FakeNavigator Navigator;
             public RecordingMetricSink Metrics;
-            public static TestHarness Create(double maxHealth = 10, int lives = -1, DefenseRouteAssignment? route = null)
+            public static TestHarness Create(double maxHealth = 10, int lives = -1, DefenseRouteAssignment? route = null, double maxShield = 0, IDefenseCombatAdapter adapter = null)
             {
                 var h = new TestHarness { Spawner = new FakeSpawner(), Navigator = new FakeNavigator(), Metrics = new RecordingMetricSink() };
-                h.Runtime = new DefenseRuntime(Definition(maxHealth, lives), h.Spawner, h.Navigator, new FixedRouteResolver(route ?? DefenseRouteAssignment.DestinationTo(Objective, Vector3.zero)), CombatAdapter(), h.Metrics);
+                h.Runtime = new DefenseRuntime(Definition(maxHealth, lives, maxShield), h.Spawner, h.Navigator, new FixedRouteResolver(route ?? DefenseRouteAssignment.DestinationTo(Objective, Vector3.zero)), adapter ?? CombatAdapter(), h.Metrics);
                 return h;
             }
         }

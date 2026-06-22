@@ -42,3 +42,20 @@ Unity.exe -batchmode -projectPath C:\Repositories\Deucarian\DefenseGames-TestPro
 - `10,000` spawn/register/kill/cleanup operations: `43.661 ms`, `0` bytes allocated.
 
 The benchmark uses fake warmed adapters so it measures the Defense Games composition hot path, not GameObject instantiation, pooling warmup, rendering, physics, or pathfinding.
+
+## Phase 1I Closeout Results
+
+- Import command: `Unity.exe -batchmode -quit -projectPath C:\Repositories\Deucarian\DefenseGames-TestProject -logFile C:\Repositories\Deucarian\DefenseGames-TestProject\Logs\phase1i-import.log`
+- Import result: passed, no compiler or package-manager errors. The log contains a Unity licensing token warning, but entitlement resolution succeeds.
+- EditMode pass 1: `12` total, `12` passed, `0` failed. Results: `C:\Repositories\Deucarian\DefenseGames-TestProject\Logs\phase1i-editmode-results-2.xml`.
+- EditMode pass 2: `12` total, `12` passed, `0` failed. Results: `C:\Repositories\Deucarian\DefenseGames-TestProject\Logs\phase1i-editmode-results-3.xml`.
+- PlayMode pass 1: `1` total, `1` passed, `0` failed. Results: `C:\Repositories\Deucarian\DefenseGames-TestProject\Logs\phase1i-playmode-results-2.xml`.
+- PlayMode pass 2: `1` total, `1` passed, `0` failed. Results: `C:\Repositories\Deucarian\DefenseGames-TestProject\Logs\phase1i-playmode-results-3.xml`.
+
+Phase 1I added focused coverage that objective damage uses Combat resolver mitigation, objective shield absorption comes from Combat, objective failure comes from Combat life state, invalid Combat requests do not mutate objective health/shield, enemy death still updates active count, and leak/objective contact events still emit.
+
+Benchmark output after the repeat run:
+
+- `1,000` spawn/register/kill/cleanup operations: `3.475 ms`, `0` bytes allocated.
+- `5,000` spawn/register/kill/cleanup operations: `20.567 ms`, `0` bytes allocated.
+- `10,000` spawn/register/kill/cleanup operations: `44.045 ms`, `0` bytes allocated.
