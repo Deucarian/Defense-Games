@@ -10,7 +10,7 @@
     "com.deucarian.gameplay-foundation": "0.1.0",
     "com.deucarian.encounters": "0.1.0",
     "com.deucarian.combat": "0.1.0",
-    "com.deucarian.world-spawning": "0.1.0",
+    "com.deucarian.world-spawning": "0.2.0",
     "com.deucarian.world-navigation": "0.1.0"
   },
   "samples": [

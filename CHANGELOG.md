@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Aligned the package manifest to require `com.deucarian.world-spawning` `0.2.0`, matching the current generic World Spawning API consumed by Defense Games tests and samples.
+
 ## 0.1.0 - 2026-06-22
 
 - Added defense-game composition runtime for Encounters, Combat, World Spawning, and World Navigation.

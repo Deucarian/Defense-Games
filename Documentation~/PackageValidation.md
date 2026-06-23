@@ -27,6 +27,12 @@ Unity.exe -batchmode -projectPath C:\Repositories\Deucarian\DefenseGames-TestPro
 
 ## Results
 
+## Phase 1V Manifest Alignment
+
+- Manifest alignment: `com.deucarian.world-spawning` updated from `0.1.0` to `0.2.0`.
+- World Spawning runtime code was not changed in Phase 1V.
+- Shared validation and Defense Games package test reruns are tracked in `C:\Repositories\JorisHoef\Codex-Mobile-Game\docs\phase-1v-package-manifest-alignment.md`.
+
 ## Phase 1L Results
 
 - EditMode pass 1: `12` total, `12` passed, `0` failed. Results: `TestResults-Phase1L-DefenseGames-EditMode-1.xml`.
