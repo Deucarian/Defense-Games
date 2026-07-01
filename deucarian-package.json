@@ -1,0 +1,25 @@
+{
+  "packageId": "com.deucarian.defense-games",
+  "displayName": "Deucarian Defense Games",
+  "ownedCapabilities": [],
+  "runtimeAssemblies": [
+    "Deucarian.DefenseGames"
+  ],
+  "editorAssemblies": [],
+  "sampleAssemblies": [],
+  "testAssemblies": [
+    "Deucarian.DefenseGames.PlayModeTests",
+    "Deucarian.DefenseGames.Tests"
+  ],
+  "requiredDependencies": [
+    "com.deucarian.gameplay-foundation",
+    "com.deucarian.encounters",
+    "com.deucarian.combat",
+    "com.deucarian.world-spawning",
+    "com.deucarian.world-navigation"
+  ],
+  "optionalVersionDefinedDependencies": [],
+  "allowedDirectDebugCalls": [],
+  "allowedDirectUnityObjectLifetimeCalls": [],
+  "expectedSamplesRoot": "Samples~"
+}
