@@ -2,6 +2,7 @@
 
 ## 0.1.1 - 2026-07-17
 
+- Added the sample assembly's direct Gameplay Foundation reference required by Encounter API signatures.
 - Aligned package metadata and samples with the portfolio contract; direct Deucarian dependencies now use the coordinated patch versions.
 - Aligned the package manifest to require `com.deucarian.world-spawning` `0.2.0`, matching the current generic World Spawning API consumed by Defense Games tests and samples.
 

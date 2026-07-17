@@ -3,6 +3,7 @@
   "rootNamespace": "Deucarian.DefenseGames.Samples",
   "references": [
     "Deucarian.DefenseGames",
+    "Deucarian.GameplayFoundation",
     "Deucarian.Combat",
     "Deucarian.Encounters",
     "Deucarian.WorldNavigation",
