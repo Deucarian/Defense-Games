@@ -1,0 +1,20 @@
+{
+  "name": "Deucarian.DefenseGames.Samples",
+  "rootNamespace": "Deucarian.DefenseGames.Samples",
+  "references": [
+    "Deucarian.DefenseGames",
+    "Deucarian.Combat",
+    "Deucarian.Encounters",
+    "Deucarian.WorldNavigation",
+    "Deucarian.WorldSpawning"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

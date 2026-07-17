@@ -1,6 +1,6 @@
 {
   "name": "com.deucarian.defense-games",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "displayName": "Deucarian Defense Games",
   "description": "Shared defense-game orchestration for encounter spawn requests, world spawning, world navigation, combat-backed objectives, agents, signals, metrics, and snapshots.",
   "unity": "6000.3",
@@ -11,11 +11,11 @@
   },
   "license": "MIT",
   "dependencies": {
-    "com.deucarian.gameplay-foundation": "0.1.0",
-    "com.deucarian.encounters": "0.1.0",
-    "com.deucarian.combat": "0.1.0",
-    "com.deucarian.world-spawning": "0.2.0",
-    "com.deucarian.world-navigation": "0.1.0"
+    "com.deucarian.gameplay-foundation": "0.1.1",
+    "com.deucarian.encounters": "0.1.1",
+    "com.deucarian.combat": "0.1.1",
+    "com.deucarian.world-spawning": "0.2.1",
+    "com.deucarian.world-navigation": "0.1.1"
   },
   "samples": [
     {
