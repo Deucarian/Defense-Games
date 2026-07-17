@@ -1,12 +1,15 @@
 {
   "packageId": "com.deucarian.defense-games",
   "displayName": "Deucarian Defense Games",
+  "samplePolicy": "playable-scene",
   "ownedCapabilities": [],
   "runtimeAssemblies": [
     "Deucarian.DefenseGames"
   ],
   "editorAssemblies": [],
-  "sampleAssemblies": [],
+  "sampleAssemblies": [
+    "Deucarian.DefenseGames.Samples"
+  ],
   "testAssemblies": [
     "Deucarian.DefenseGames.PlayModeTests",
     "Deucarian.DefenseGames.Tests"
